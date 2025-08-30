@@ -1,0 +1,2 @@
+/Users/apple/Documents/faisal/projects/security_scanner/android/app/.cxx/Debug/693p171t/x86/CMakeFiles/edit_cache.dir
+/Users/apple/Documents/faisal/projects/security_scanner/android/app/.cxx/Debug/693p171t/x86/CMakeFiles/rebuild_cache.dir

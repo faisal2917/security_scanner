@@ -1,0 +1,1 @@
+/Users/apple/Documents/faisal/projects/security_scanner/build/app/intermediates/cxx/RelWithDebInfo/2y4u4p5e/obj/arm64-v8a
