@@ -16,6 +16,7 @@ class SecurityCheckerScreen extends StatefulWidget {
 
 class _SecurityCheckerScreenState extends State<SecurityCheckerScreen>
     with SingleTickerProviderStateMixin {
+  bool loading = false;
   String _deviceStatus = "Checking...";
   String _jailbreakStatus = "Checking...";
   String _wifiSecurity = "Checking...";
@@ -44,13 +45,6 @@ final List<String> _blacklistedApps = [
   "SuperSU", "Parallel Space", "App Cloner", "Dual Space"
 ];
 
-  // final List<String> _highRiskPermissions = [
-  //   "android.permission.SYSTEM_ALERT_WINDOW",
-  //   "android.permission.READ_SMS",
-  //   "android.permission.SEND_SMS",
-  //   "android.permission.RECEIVE_SMS",
-  //   "android.permission.WRITE_SETTINGS"
-  // ];
   final List<String> highRiskPermissions = [
   "android.permission.SYSTEM_ALERT_WINDOW", "android.permission.READ_SMS",
   "android.permission.SEND_SMS", "android.permission.RECEIVE_SMS",
@@ -63,10 +57,22 @@ final List<String> _blacklistedApps = [
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: Duration(seconds: 2))
-      ..repeat(reverse: true);
+    loading = true;
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat(reverse: true);
+
     _animation = Tween<double>(begin: 1.0, end: 1.2).animate(_controller);
-    checkDeviceSecurity();
+
+    // Delay for 2 seconds before checking device security
+    Future.delayed(const Duration(seconds: 2), () {
+      checkDeviceSecurity();
+      setState(() {
+        loading = false; // Stop loading after 2s
+      });
+    });
   }
 
   Future<void> checkDeviceSecurity() async {
@@ -177,11 +183,12 @@ Future<bool> checkHighRiskPermissions() async {
         backgroundColor: Colors.blueGrey[900],
         centerTitle: true,
       ),
-      body: ListView(
-        padding: EdgeInsets.all(20),
-        children: [
-           Center(
-            child: AnimatedBuilder(
+      body: loading
+          ? Center( // Show loading animation
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedBuilder(
               animation: _animation,
               builder: (context, child) {
                 return Transform.scale(
@@ -203,28 +210,36 @@ Future<bool> checkHighRiskPermissions() async {
                         )
                       ],
                     ),
-                    child: Center(
+                    child: const Center(
                       child: Icon(Icons.security, size: 100, color: Colors.white),
                     ),
                   ),
                 );
               },
             ),
+            SizedBox(
+              height: 40,
+            ),
+            Text(
+              "Scanning...",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white
+              ),
+            )
+          ],
+        ),
+      )
+          : ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          // Security scanner logo (can remove if you want only in loading)
+          Center(
+            child: Icon(Icons.verified_user,
+                size: 100, color: Colors.greenAccent),
           ),
-          SizedBox(
-            height: 20,
-          ),
-          // Center(
-          //   child: AnimatedBuilder(
-          //     animation: _animation,
-          //     builder: (context, child) {
-          //       return Transform.scale(
-          //         scale: _animation.value,
-          //         child: Icon(Icons.security, size: 100, color: Colors.blueAccent),
-          //       );
-          //     },
-          //   ),
-          // ),
+          const SizedBox(height: 20),
           buildSecurityStatus("Root Status", _deviceStatus),
           buildSecurityStatus("Jailbreak Status", _jailbreakStatus),
           buildSecurityStatus("Wi-Fi Security", _wifiSecurity),
@@ -238,6 +253,7 @@ Future<bool> checkHighRiskPermissions() async {
       ),
     );
   }
+
 
   Widget buildSecurityStatus(String title, String status) {
     return Card(
